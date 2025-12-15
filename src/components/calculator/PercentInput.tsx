@@ -29,16 +29,19 @@ export function PercentInput({
     const rawValue = e.target.value.replace(/[^\d.,]/g, '').replace(',', '.');
     const numericValue = parseFloat(rawValue) || 0;
     
-    if (min !== undefined && numericValue < min) {
+    // Round to 2 decimal places
+    const roundedValue = Math.round(numericValue * 100) / 100;
+    
+    if (min !== undefined && roundedValue < min) {
       onChange(min);
       return;
     }
-    if (max !== undefined && numericValue > max) {
+    if (max !== undefined && roundedValue > max) {
       onChange(max);
       return;
     }
     
-    onChange(numericValue);
+    onChange(roundedValue);
   };
 
   return (
@@ -49,10 +52,11 @@ export function PercentInput({
           id={id}
           type="text"
           inputMode="decimal"
-          value={value || ''}
+          value={value ? value.toString().replace('.', ',') : ''}
           onChange={handleChange}
           placeholder={placeholder}
-          className="pr-10"
+          step="0.01"
+          className="pr-12"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
           % a.a.

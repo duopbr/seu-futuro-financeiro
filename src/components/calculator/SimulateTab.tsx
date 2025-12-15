@@ -5,13 +5,14 @@ import { PercentInput } from './PercentInput';
 import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
-import { simulatePatrimony, SimulationResult } from '@/lib/calculations';
-import { Wallet, TrendingUp, Sparkles } from 'lucide-react';
+import { simulatePatrimony, SimulationResult, formatCurrency } from '@/lib/calculations';
+import { Wallet, TrendingUp, Sparkles, TrendingDown } from 'lucide-react';
 
 export function SimulateTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
   const [aporteMensal, setAporteMensal] = useState(1000);
   const [taxaAnual, setTaxaAnual] = useState(10);
+  const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [prazoAnos, setPrazoAnos] = useState(10);
   
   const [result, setResult] = useState<SimulationResult | null>(null);
@@ -22,10 +23,11 @@ export function SimulateTab() {
       patrimonioInicial,
       aporteMensal,
       taxaAnual,
-      prazoMeses
+      prazoMeses,
+      inflacaoAnual
     );
     setResult(simulation);
-  }, [patrimonioInicial, aporteMensal, taxaAnual, prazoAnos]);
+  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoAnual, prazoAnos]);
 
   return (
     <div className="space-y-6">
@@ -37,7 +39,7 @@ export function SimulateTab() {
             Ajuste os valores para simular o crescimento do seu patrimônio
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <CurrencyInput
             id="patrimonio-inicial"
             label="Patrimônio Inicial"
@@ -57,9 +59,18 @@ export function SimulateTab() {
             label="Rentabilidade Anual"
             value={taxaAnual}
             onChange={setTaxaAnual}
-            placeholder="10"
-            max={50}
+            placeholder="10,00"
+            max={100}
             hint="Taxa nominal anual (será convertida para mensal)"
+          />
+          <PercentInput
+            id="inflacao-anual"
+            label="Inflação Esperada"
+            value={inflacaoAnual}
+            onChange={setInflacaoAnual}
+            placeholder="4,50"
+            max={50}
+            hint="Para calcular o valor real do patrimônio"
           />
           <YearsInput
             id="prazo-anos"
@@ -75,12 +86,19 @@ export function SimulateTab() {
       {/* Results */}
       {result && (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <ResultCard
               label="Patrimônio Final"
               value={result.patrimonioFinal}
               icon={<Wallet className="h-5 w-5" />}
               variant="primary"
+              subtitle="Valor nominal"
+            />
+            <ResultCard
+              label="Patrimônio Real"
+              value={result.patrimonioFinalReal}
+              icon={<TrendingDown className="h-5 w-5" />}
+              subtitle="Corrigido pela inflação"
             />
             <ResultCard
               label="Total Investido"
@@ -92,6 +110,7 @@ export function SimulateTab() {
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
               variant="success"
+              subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
             />
           </div>
 
@@ -100,11 +119,11 @@ export function SimulateTab() {
             <CardHeader>
               <CardTitle className="text-lg">Evolução do Patrimônio</CardTitle>
               <CardDescription>
-                Comparativo entre patrimônio total e valor investido ao longo do tempo
+                Comparativo entre patrimônio total, valor real e valor investido ao longo do tempo
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PatrimonyChart data={result.data} />
+              <PatrimonyChart data={result.data} showReal={inflacaoAnual > 0} />
             </CardContent>
           </Card>
         </>

@@ -6,12 +6,13 @@ import { PercentInput } from './PercentInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { calculateTimeToGoal, TimeToGoalResult, formatCurrency } from '@/lib/calculations';
-import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles } from 'lucide-react';
+import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown } from 'lucide-react';
 
 export function TimeToGoalTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
   const [aporteMensal, setAporteMensal] = useState(1000);
   const [taxaAnual, setTaxaAnual] = useState(10);
+  const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [patrimonioObjetivo, setPatrimonioObjetivo] = useState(500000);
   
   const [result, setResult] = useState<TimeToGoalResult | null>(null);
@@ -21,10 +22,11 @@ export function TimeToGoalTab() {
       patrimonioInicial,
       aporteMensal,
       taxaAnual,
-      patrimonioObjetivo
+      patrimonioObjetivo,
+      inflacaoAnual
     );
     setResult(calculation);
-  }, [patrimonioInicial, aporteMensal, taxaAnual, patrimonioObjetivo]);
+  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoAnual, patrimonioObjetivo]);
 
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('pt-BR', {
@@ -50,7 +52,7 @@ export function TimeToGoalTab() {
             Descubra em quanto tempo você atingirá seu patrimônio desejado
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <CurrencyInput
             id="patrimonio-inicial-goal"
             label="Patrimônio Inicial"
@@ -70,8 +72,17 @@ export function TimeToGoalTab() {
             label="Rentabilidade Anual"
             value={taxaAnual}
             onChange={setTaxaAnual}
-            placeholder="10"
+            placeholder="10,00"
+            max={100}
+          />
+          <PercentInput
+            id="inflacao-anual-goal"
+            label="Inflação Esperada"
+            value={inflacaoAnual}
+            onChange={setInflacaoAnual}
+            placeholder="4,50"
             max={50}
+            hint="Para calcular o valor real do patrimônio"
           />
           <CurrencyInput
             id="patrimonio-objetivo"
@@ -123,13 +134,19 @@ export function TimeToGoalTab() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <ResultCard
               label="Patrimônio Final"
               value={result.patrimonioFinal}
               icon={<Target className="h-5 w-5" />}
               variant="primary"
               subtitle={`Meta: ${formatCurrency(patrimonioObjetivo)}`}
+            />
+            <ResultCard
+              label="Patrimônio Real"
+              value={result.patrimonioFinalReal}
+              icon={<TrendingDown className="h-5 w-5" />}
+              subtitle="Corrigido pela inflação"
             />
             <ResultCard
               label="Total Investido"
@@ -141,6 +158,7 @@ export function TimeToGoalTab() {
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
               variant="success"
+              subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
             />
           </div>
 
@@ -153,7 +171,7 @@ export function TimeToGoalTab() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PatrimonyChart data={result.data} />
+              <PatrimonyChart data={result.data} showReal={inflacaoAnual > 0} />
             </CardContent>
           </Card>
         </>

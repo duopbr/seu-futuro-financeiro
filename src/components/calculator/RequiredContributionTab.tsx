@@ -7,11 +7,12 @@ import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { calculateRequiredContribution, RequiredContributionResult, formatCurrency } from '@/lib/calculations';
-import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle, TrendingDown } from 'lucide-react';
 
 export function RequiredContributionTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
   const [taxaAnual, setTaxaAnual] = useState(10);
+  const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [patrimonioObjetivo, setPatrimonioObjetivo] = useState(500000);
   const [prazoAnos, setPrazoAnos] = useState(15);
   
@@ -23,10 +24,11 @@ export function RequiredContributionTab() {
       patrimonioInicial,
       taxaAnual,
       patrimonioObjetivo,
-      prazoMeses
+      prazoMeses,
+      inflacaoAnual
     );
     setResult(calculation);
-  }, [patrimonioInicial, taxaAnual, patrimonioObjetivo, prazoAnos]);
+  }, [patrimonioInicial, taxaAnual, inflacaoAnual, patrimonioObjetivo, prazoAnos]);
 
   return (
     <div className="space-y-6">
@@ -38,7 +40,7 @@ export function RequiredContributionTab() {
             Descubra quanto precisa investir por mês para atingir seu objetivo no prazo desejado
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <CurrencyInput
             id="patrimonio-inicial-contrib"
             label="Patrimônio Inicial"
@@ -51,8 +53,17 @@ export function RequiredContributionTab() {
             label="Rentabilidade Anual"
             value={taxaAnual}
             onChange={setTaxaAnual}
-            placeholder="10"
+            placeholder="10,00"
+            max={100}
+          />
+          <PercentInput
+            id="inflacao-anual-contrib"
+            label="Inflação Esperada"
+            value={inflacaoAnual}
+            onChange={setInflacaoAnual}
+            placeholder="4,50"
             max={50}
+            hint="Para calcular o valor real do patrimônio"
           />
           <CurrencyInput
             id="patrimonio-objetivo-contrib"
@@ -117,7 +128,13 @@ export function RequiredContributionTab() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ResultCard
+              label="Patrimônio Real"
+              value={result.patrimonioFinalReal}
+              icon={<TrendingDown className="h-5 w-5" />}
+              subtitle="Corrigido pela inflação"
+            />
             <ResultCard
               label="Total Investido"
               value={result.totalInvestido}
@@ -129,6 +146,7 @@ export function RequiredContributionTab() {
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
               variant="success"
+              subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
             />
           </div>
 
@@ -142,7 +160,7 @@ export function RequiredContributionTab() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <PatrimonyChart data={result.data} />
+                <PatrimonyChart data={result.data} showReal={inflacaoAnual > 0} />
               </CardContent>
             </Card>
           )}
