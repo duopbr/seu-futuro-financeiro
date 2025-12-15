@@ -10,6 +10,7 @@ import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { LeadCaptureDialog } from './LeadCaptureDialog';
 import { simulatePatrimony, SimulationResult, formatCurrency } from '@/lib/calculations';
+import { useLeadCapture } from '@/hooks/use-lead-capture';
 import { Wallet, TrendingUp, Sparkles, TrendingDown, Gift, Calculator } from 'lucide-react';
 
 export function SimulateTab() {
@@ -23,14 +24,12 @@ export function SimulateTab() {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [showLeadDialog, setShowLeadDialog] = useState(false);
+  
+  const { isLeadCaptured } = useLeadCapture();
 
   const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
-  const handleCalculate = () => {
-    setShowLeadDialog(true);
-  };
-
-  const handleLeadSubmit = () => {
+  const performCalculation = () => {
     const prazoMeses = prazoAnos * 12;
     const simulation = simulatePatrimony(
       patrimonioInicial,
@@ -41,6 +40,18 @@ export function SimulateTab() {
     );
     setResult(simulation);
     setShowResults(true);
+  };
+
+  const handleCalculate = () => {
+    if (isLeadCaptured()) {
+      performCalculation();
+    } else {
+      setShowLeadDialog(true);
+    }
+  };
+
+  const handleLeadSubmit = () => {
+    performCalculation();
   };
 
   return (
@@ -184,6 +195,7 @@ export function SimulateTab() {
         open={showLeadDialog}
         onOpenChange={setShowLeadDialog}
         onSubmit={handleLeadSubmit}
+        calculatorType="SimularPatrimonio"
       />
     </div>
   );

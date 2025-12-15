@@ -184,6 +184,7 @@ export type Database = {
           Nota: string | null
           "Numero de Conversas": string | null
           patrimonio: string | null
+          perfil: string | null
           phone: string | null
           "Se sentiu enganado": string | null
           valor_mes: string | null
@@ -201,6 +202,7 @@ export type Database = {
           Nota?: string | null
           "Numero de Conversas"?: string | null
           patrimonio?: string | null
+          perfil?: string | null
           phone?: string | null
           "Se sentiu enganado"?: string | null
           valor_mes?: string | null
@@ -218,6 +220,7 @@ export type Database = {
           Nota?: string | null
           "Numero de Conversas"?: string | null
           patrimonio?: string | null
+          perfil?: string | null
           phone?: string | null
           "Se sentiu enganado"?: string | null
           valor_mes?: string | null

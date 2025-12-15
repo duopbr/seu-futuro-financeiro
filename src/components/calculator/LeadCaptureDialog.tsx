@@ -16,18 +16,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { useLeadCapture } from '@/hooks/use-lead-capture';
+import { toast } from 'sonner';
 
 interface LeadCaptureDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: () => void;
+  calculatorType: string;
 }
 
-export function LeadCaptureDialog({ open, onOpenChange, onSubmit }: LeadCaptureDialogProps) {
+export function LeadCaptureDialog({ open, onOpenChange, onSubmit, calculatorType }: LeadCaptureDialogProps) {
   const [nome, setNome] = useState('');
   const [celular, setCelular] = useState('');
   const [perfil, setPerfil] = useState('');
   const [errors, setErrors] = useState<{ nome?: string; celular?: string; perfil?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setLeadCaptured } = useLeadCapture();
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -61,16 +67,39 @@ export function LeadCaptureDialog({ open, onOpenChange, onSubmit }: LeadCaptureD
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validate()) return;
     
-    // Log lead data (futuramente enviar para backend)
-    console.log('Lead capturado:', { nome, celular, perfil });
+    setIsSubmitting(true);
     
-    onSubmit();
-    onOpenChange(false);
+    try {
+      const { error } = await supabase
+        .from('Calculadoras')
+        .insert({
+          Name: nome.trim(),
+          phone: celular,
+          perfil: perfil,
+          calculadora: calculatorType
+        });
+
+      if (error) {
+        console.error('Error saving lead:', error);
+        toast.error('Erro ao salvar dados. Tente novamente.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setLeadCaptured();
+      onSubmit();
+      onOpenChange(false);
+    } catch (err) {
+      console.error('Error saving lead:', err);
+      toast.error('Erro ao salvar dados. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -130,8 +159,8 @@ export function LeadCaptureDialog({ open, onOpenChange, onSubmit }: LeadCaptureD
             )}
           </div>
           
-          <Button type="submit" className="w-full">
-            Ver Resultados
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Salvando...' : 'Ver Resultados'}
           </Button>
         </form>
       </DialogContent>

@@ -10,6 +10,7 @@ import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { LeadCaptureDialog } from './LeadCaptureDialog';
 import { calculateTimeToGoal, TimeToGoalResult, formatCurrency } from '@/lib/calculations';
+import { useLeadCapture } from '@/hooks/use-lead-capture';
 import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown, Calculator } from 'lucide-react';
 
 export function TimeToGoalTab() {
@@ -23,14 +24,12 @@ export function TimeToGoalTab() {
   const [result, setResult] = useState<TimeToGoalResult | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [showLeadDialog, setShowLeadDialog] = useState(false);
+  
+  const { isLeadCaptured } = useLeadCapture();
 
   const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
-  const handleCalculate = () => {
-    setShowLeadDialog(true);
-  };
-
-  const handleLeadSubmit = () => {
+  const performCalculation = () => {
     const calculation = calculateTimeToGoal(
       patrimonioInicial,
       aporteMensal,
@@ -40,6 +39,18 @@ export function TimeToGoalTab() {
     );
     setResult(calculation);
     setShowResults(true);
+  };
+
+  const handleCalculate = () => {
+    if (isLeadCaptured()) {
+      performCalculation();
+    } else {
+      setShowLeadDialog(true);
+    }
+  };
+
+  const handleLeadSubmit = () => {
+    performCalculation();
   };
 
   const formatDate = (date: Date): string => {
@@ -224,6 +235,7 @@ export function TimeToGoalTab() {
         open={showLeadDialog}
         onOpenChange={setShowLeadDialog}
         onSubmit={handleLeadSubmit}
+        calculatorType="TempoParaObjetivo"
       />
     </div>
   );
