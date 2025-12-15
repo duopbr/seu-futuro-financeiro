@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -25,23 +26,43 @@ export function PercentInput({
   id,
   hint
 }: PercentInputProps) {
+  const [displayValue, setDisplayValue] = useState(
+    value ? value.toString().replace('.', ',') : ''
+  );
+
+  useEffect(() => {
+    const currentNumeric = parseFloat(displayValue.replace(',', '.')) || 0;
+    if (Math.abs(currentNumeric - value) > 0.001) {
+      setDisplayValue(value ? value.toString().replace('.', ',') : '');
+    }
+  }, [value]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/[^\d.,]/g, '').replace(',', '.');
-    const numericValue = parseFloat(rawValue) || 0;
+    let inputValue = e.target.value.replace(/[^\d.,]/g, '');
     
-    // Round to 2 decimal places
-    const roundedValue = Math.round(numericValue * 100) / 100;
+    // Normalizar: substituir ponto por vírgula
+    inputValue = inputValue.replace('.', ',');
     
-    if (min !== undefined && roundedValue < min) {
-      onChange(min);
-      return;
-    }
-    if (max !== undefined && roundedValue > max) {
-      onChange(max);
-      return;
+    // Limitar a uma única vírgula
+    const parts = inputValue.split(',');
+    if (parts.length > 2) {
+      inputValue = parts[0] + ',' + parts.slice(1).join('');
     }
     
-    onChange(roundedValue);
+    // Limitar a 2 casas decimais
+    const [intPart, decPart] = inputValue.split(',');
+    const finalDisplay = decPart !== undefined 
+      ? `${intPart},${decPart.slice(0, 2)}` 
+      : inputValue;
+    
+    setDisplayValue(finalDisplay);
+    
+    // Converter para número e validar
+    const numericValue = parseFloat(finalDisplay.replace(',', '.')) || 0;
+    
+    if (numericValue >= min && numericValue <= max) {
+      onChange(numericValue);
+    }
   };
 
   return (
@@ -52,10 +73,9 @@ export function PercentInput({
           id={id}
           type="text"
           inputMode="decimal"
-          value={value ? value.toString().replace('.', ',') : ''}
+          value={displayValue}
           onChange={handleChange}
           placeholder={placeholder}
-          step="0.01"
           className="pr-12"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
