@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { calculateTimeToGoal, TimeToGoalResult, formatCurrency } from '@/lib/calculations';
-import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown } from 'lucide-react';
+import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown, Settings, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function TimeToGoalTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -14,6 +16,7 @@ export function TimeToGoalTab() {
   const [taxaAnual, setTaxaAnual] = useState(10);
   const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [patrimonioObjetivo, setPatrimonioObjetivo] = useState(500000);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   
   const [result, setResult] = useState<TimeToGoalResult | null>(null);
 
@@ -52,45 +55,59 @@ export function TimeToGoalTab() {
             Descubra em quanto tempo você atingirá seu patrimônio desejado
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <CurrencyInput
-            id="patrimonio-inicial-goal"
-            label="Patrimônio Inicial"
-            value={patrimonioInicial}
-            onChange={setPatrimonioInicial}
-            placeholder="10.000,00"
-          />
-          <CurrencyInput
-            id="aporte-mensal-goal"
-            label="Aporte Mensal"
-            value={aporteMensal}
-            onChange={setAporteMensal}
-            placeholder="1.000,00"
-          />
-          <PercentInput
-            id="taxa-anual-goal"
-            label="Rentabilidade Anual"
-            value={taxaAnual}
-            onChange={setTaxaAnual}
-            placeholder="10,00"
-            max={100}
-          />
-          <PercentInput
-            id="inflacao-anual-goal"
-            label="Inflação Esperada"
-            value={inflacaoAnual}
-            onChange={setInflacaoAnual}
-            placeholder="4,50"
-            max={50}
-            hint="Para calcular o valor real do patrimônio"
-          />
-          <CurrencyInput
-            id="patrimonio-objetivo"
-            label="Patrimônio Objetivo"
-            value={patrimonioObjetivo}
-            onChange={setPatrimonioObjetivo}
-            placeholder="500.000,00"
-          />
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <CurrencyInput
+              id="patrimonio-inicial-goal"
+              label="Patrimônio Inicial"
+              value={patrimonioInicial}
+              onChange={setPatrimonioInicial}
+              placeholder="10.000,00"
+            />
+            <CurrencyInput
+              id="aporte-mensal-goal"
+              label="Aporte Mensal"
+              value={aporteMensal}
+              onChange={setAporteMensal}
+              placeholder="1.000,00"
+            />
+            <PercentInput
+              id="taxa-anual-goal"
+              label="Rentabilidade Anual"
+              value={taxaAnual}
+              onChange={setTaxaAnual}
+              placeholder="10,00"
+              max={100}
+            />
+            <CurrencyInput
+              id="patrimonio-objetivo"
+              label="Patrimônio Objetivo"
+              value={patrimonioObjetivo}
+              onChange={setPatrimonioObjetivo}
+              placeholder="500.000,00"
+            />
+          </div>
+
+          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Settings className="h-4 w-4" />
+              <span>Configurações Avançadas</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <div className="p-4 bg-muted/50 rounded-lg max-w-xs">
+                <PercentInput
+                  id="inflacao-anual-goal"
+                  label="Inflação Esperada"
+                  value={inflacaoAnual}
+                  onChange={setInflacaoAnual}
+                  placeholder="4,50"
+                  max={50}
+                  hint="Para calcular o valor real do patrimônio"
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
       </Card>
 
