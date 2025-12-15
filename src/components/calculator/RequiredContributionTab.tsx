@@ -11,6 +11,7 @@ import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { LeadCaptureDialog } from './LeadCaptureDialog';
 import { calculateRequiredContribution, RequiredContributionResult, formatCurrency } from '@/lib/calculations';
+import { useLeadCapture } from '@/hooks/use-lead-capture';
 import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle, TrendingDown, Calculator } from 'lucide-react';
 
 export function RequiredContributionTab() {
@@ -24,14 +25,12 @@ export function RequiredContributionTab() {
   const [result, setResult] = useState<RequiredContributionResult | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [showLeadDialog, setShowLeadDialog] = useState(false);
+  
+  const { isLeadCaptured } = useLeadCapture();
 
   const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
-  const handleCalculate = () => {
-    setShowLeadDialog(true);
-  };
-
-  const handleLeadSubmit = () => {
+  const performCalculation = () => {
     const prazoMeses = prazoAnos * 12;
     const calculation = calculateRequiredContribution(
       patrimonioInicial,
@@ -42,6 +41,18 @@ export function RequiredContributionTab() {
     );
     setResult(calculation);
     setShowResults(true);
+  };
+
+  const handleCalculate = () => {
+    if (isLeadCaptured()) {
+      performCalculation();
+    } else {
+      setShowLeadDialog(true);
+    }
+  };
+
+  const handleLeadSubmit = () => {
+    performCalculation();
   };
 
   return (
@@ -214,6 +225,7 @@ export function RequiredContributionTab() {
         open={showLeadDialog}
         onOpenChange={setShowLeadDialog}
         onSubmit={handleLeadSubmit}
+        calculatorType="AporteNecessario"
       />
     </div>
   );
