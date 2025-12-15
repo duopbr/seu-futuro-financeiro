@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { calculateRequiredContribution, RequiredContributionResult, formatCurrency } from '@/lib/calculations';
-import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle, TrendingDown, Settings, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle, TrendingDown } from 'lucide-react';
 
 export function RequiredContributionTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -17,9 +17,11 @@ export function RequiredContributionTab() {
   const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [patrimonioObjetivo, setPatrimonioObjetivo] = useState(500000);
   const [prazoAnos, setPrazoAnos] = useState(15);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [considerarInflacao, setConsiderarInflacao] = useState(false);
   
   const [result, setResult] = useState<RequiredContributionResult | null>(null);
+
+  const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
   useEffect(() => {
     const prazoMeses = prazoAnos * 12;
@@ -28,10 +30,10 @@ export function RequiredContributionTab() {
       taxaAnual,
       patrimonioObjetivo,
       prazoMeses,
-      inflacaoAnual
+      inflacaoEfetiva
     );
     setResult(calculation);
-  }, [patrimonioInicial, taxaAnual, inflacaoAnual, patrimonioObjetivo, prazoAnos]);
+  }, [patrimonioInicial, taxaAnual, inflacaoEfetiva, patrimonioObjetivo, prazoAnos]);
 
   return (
     <div className="space-y-6">
@@ -77,26 +79,34 @@ export function RequiredContributionTab() {
             />
           </div>
 
-          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <Settings className="h-4 w-4" />
-              <span>Configurações Avançadas</span>
-              <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              <div className="p-4 bg-muted/50 rounded-lg max-w-xs">
-                <PercentInput
-                  id="inflacao-anual-contrib"
-                  label="Inflação Esperada"
-                  value={inflacaoAnual}
-                  onChange={setInflacaoAnual}
-                  placeholder="4,50"
-                  max={50}
-                  hint="Para calcular o valor real do patrimônio"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex flex-col gap-0.5">
+              <Label htmlFor="considerar-inflacao-contrib" className="font-medium cursor-pointer">
+                Considerar Inflação
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                Calcular valor real do patrimônio
+              </span>
+            </div>
+            <Switch
+              id="considerar-inflacao-contrib"
+              checked={considerarInflacao}
+              onCheckedChange={setConsiderarInflacao}
+            />
+          </div>
+
+          {considerarInflacao && (
+            <div className="p-3 bg-muted/30 rounded-lg max-w-xs">
+              <PercentInput
+                id="inflacao-anual-contrib"
+                label="Inflação Esperada (% ao ano)"
+                value={inflacaoAnual}
+                onChange={setInflacaoAnual}
+                placeholder="4,50"
+                max={50}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -146,12 +156,14 @@ export function RequiredContributionTab() {
           </Card>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <ResultCard
-              label="Patrimônio Real"
-              value={result.patrimonioFinalReal}
-              icon={<TrendingDown className="h-5 w-5" />}
-              subtitle="Corrigido pela inflação"
-            />
+            {considerarInflacao && (
+              <ResultCard
+                label="Patrimônio Real"
+                value={result.patrimonioFinalReal}
+                icon={<TrendingDown className="h-5 w-5" />}
+                subtitle="Corrigido pela inflação"
+              />
+            )}
             <ResultCard
               label="Total Investido"
               value={result.totalInvestido}
@@ -163,7 +175,7 @@ export function RequiredContributionTab() {
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
               variant="success"
-              subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
+              subtitle={considerarInflacao ? `Real: ${formatCurrency(result.jurosTotalReal)}` : undefined}
             />
           </div>
 
@@ -177,7 +189,7 @@ export function RequiredContributionTab() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <PatrimonyChart data={result.data} showReal={inflacaoAnual > 0} />
+                <PatrimonyChart data={result.data} showReal={considerarInflacao} />
               </CardContent>
             </Card>
           )}

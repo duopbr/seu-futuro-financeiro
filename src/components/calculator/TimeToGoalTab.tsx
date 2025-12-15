@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { calculateTimeToGoal, TimeToGoalResult, formatCurrency } from '@/lib/calculations';
-import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown, Settings, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown } from 'lucide-react';
 
 export function TimeToGoalTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -16,9 +16,11 @@ export function TimeToGoalTab() {
   const [taxaAnual, setTaxaAnual] = useState(10);
   const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [patrimonioObjetivo, setPatrimonioObjetivo] = useState(500000);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [considerarInflacao, setConsiderarInflacao] = useState(false);
   
   const [result, setResult] = useState<TimeToGoalResult | null>(null);
+
+  const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
   useEffect(() => {
     const calculation = calculateTimeToGoal(
@@ -26,10 +28,10 @@ export function TimeToGoalTab() {
       aporteMensal,
       taxaAnual,
       patrimonioObjetivo,
-      inflacaoAnual
+      inflacaoEfetiva
     );
     setResult(calculation);
-  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoAnual, patrimonioObjetivo]);
+  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoEfetiva, patrimonioObjetivo]);
 
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('pt-BR', {
@@ -88,26 +90,34 @@ export function TimeToGoalTab() {
             />
           </div>
 
-          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <Settings className="h-4 w-4" />
-              <span>Configurações Avançadas</span>
-              <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              <div className="p-4 bg-muted/50 rounded-lg max-w-xs">
-                <PercentInput
-                  id="inflacao-anual-goal"
-                  label="Inflação Esperada"
-                  value={inflacaoAnual}
-                  onChange={setInflacaoAnual}
-                  placeholder="4,50"
-                  max={50}
-                  hint="Para calcular o valor real do patrimônio"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex flex-col gap-0.5">
+              <Label htmlFor="considerar-inflacao-goal" className="font-medium cursor-pointer">
+                Considerar Inflação
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                Calcular valor real do patrimônio
+              </span>
+            </div>
+            <Switch
+              id="considerar-inflacao-goal"
+              checked={considerarInflacao}
+              onCheckedChange={setConsiderarInflacao}
+            />
+          </div>
+
+          {considerarInflacao && (
+            <div className="p-3 bg-muted/30 rounded-lg max-w-xs">
+              <PercentInput
+                id="inflacao-anual-goal"
+                label="Inflação Esperada (% ao ano)"
+                value={inflacaoAnual}
+                onChange={setInflacaoAnual}
+                placeholder="4,50"
+                max={50}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -159,12 +169,14 @@ export function TimeToGoalTab() {
               variant="primary"
               subtitle={`Meta: ${formatCurrency(patrimonioObjetivo)}`}
             />
-            <ResultCard
-              label="Patrimônio Real"
-              value={result.patrimonioFinalReal}
-              icon={<TrendingDown className="h-5 w-5" />}
-              subtitle="Corrigido pela inflação"
-            />
+            {considerarInflacao && (
+              <ResultCard
+                label="Patrimônio Real"
+                value={result.patrimonioFinalReal}
+                icon={<TrendingDown className="h-5 w-5" />}
+                subtitle="Corrigido pela inflação"
+              />
+            )}
             <ResultCard
               label="Total Investido"
               value={result.totalInvestido}
@@ -175,7 +187,7 @@ export function TimeToGoalTab() {
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
               variant="success"
-              subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
+              subtitle={considerarInflacao ? `Real: ${formatCurrency(result.jurosTotalReal)}` : undefined}
             />
           </div>
 
@@ -188,7 +200,7 @@ export function TimeToGoalTab() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PatrimonyChart data={result.data} showReal={inflacaoAnual > 0} />
+              <PatrimonyChart data={result.data} showReal={considerarInflacao} />
             </CardContent>
           </Card>
         </>

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { simulatePatrimony, SimulationResult, formatCurrency } from '@/lib/calculations';
-import { Wallet, TrendingUp, Sparkles, TrendingDown, Gift, Settings, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Wallet, TrendingUp, Sparkles, TrendingDown, Gift } from 'lucide-react';
 
 export function SimulateTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -16,9 +16,11 @@ export function SimulateTab() {
   const [taxaAnual, setTaxaAnual] = useState(10);
   const [inflacaoAnual, setInflacaoAnual] = useState(4.5);
   const [prazoAnos, setPrazoAnos] = useState(10);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [considerarInflacao, setConsiderarInflacao] = useState(false);
   
   const [result, setResult] = useState<SimulationResult | null>(null);
+
+  const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
   useEffect(() => {
     const prazoMeses = prazoAnos * 12;
@@ -27,10 +29,10 @@ export function SimulateTab() {
       aporteMensal,
       taxaAnual,
       prazoMeses,
-      inflacaoAnual
+      inflacaoEfetiva
     );
     setResult(simulation);
-  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoAnual, prazoAnos]);
+  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoEfetiva, prazoAnos]);
 
   return (
     <div className="space-y-6">
@@ -77,26 +79,34 @@ export function SimulateTab() {
             />
           </div>
 
-          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <Settings className="h-4 w-4" />
-              <span>Configurações Avançadas</span>
-              <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              <div className="p-4 bg-muted/50 rounded-lg max-w-xs">
-                <PercentInput
-                  id="inflacao-anual"
-                  label="Inflação Esperada"
-                  value={inflacaoAnual}
-                  onChange={setInflacaoAnual}
-                  placeholder="4,50"
-                  max={50}
-                  hint="Para calcular o valor real do patrimônio"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex flex-col gap-0.5">
+              <Label htmlFor="considerar-inflacao" className="font-medium cursor-pointer">
+                Considerar Inflação
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                Calcular valor real do patrimônio
+              </span>
+            </div>
+            <Switch
+              id="considerar-inflacao"
+              checked={considerarInflacao}
+              onCheckedChange={setConsiderarInflacao}
+            />
+          </div>
+
+          {considerarInflacao && (
+            <div className="p-3 bg-muted/30 rounded-lg max-w-xs">
+              <PercentInput
+                id="inflacao-anual"
+                label="Inflação Esperada (% ao ano)"
+                value={inflacaoAnual}
+                onChange={setInflacaoAnual}
+                placeholder="4,50"
+                max={50}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -111,12 +121,14 @@ export function SimulateTab() {
               variant="primary"
               subtitle="Valor nominal"
             />
-            <ResultCard
-              label="Patrimônio Real"
-              value={result.patrimonioFinalReal}
-              icon={<TrendingDown className="h-5 w-5" />}
-              subtitle="Corrigido pela inflação"
-            />
+            {considerarInflacao && (
+              <ResultCard
+                label="Patrimônio Real"
+                value={result.patrimonioFinalReal}
+                icon={<TrendingDown className="h-5 w-5" />}
+                subtitle="Corrigido pela inflação"
+              />
+            )}
             <ResultCard
               label="Benefício dos Aportes"
               value={result.beneficioAportes}
@@ -135,7 +147,7 @@ export function SimulateTab() {
               label="Ganho com Juros"
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
-              subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
+              subtitle={considerarInflacao ? `Real: ${formatCurrency(result.jurosTotalReal)}` : undefined}
             />
           </div>
 
@@ -144,11 +156,11 @@ export function SimulateTab() {
             <CardHeader>
               <CardTitle className="text-lg">Evolução do Patrimônio</CardTitle>
               <CardDescription>
-                Comparativo entre patrimônio total, valor real e valor investido ao longo do tempo
+                Comparativo entre patrimônio total{considerarInflacao ? ', valor real' : ''} e valor investido ao longo do tempo
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PatrimonyChart data={result.data} showReal={inflacaoAnual > 0} />
+              <PatrimonyChart data={result.data} showReal={considerarInflacao} />
             </CardContent>
           </Card>
         </>
