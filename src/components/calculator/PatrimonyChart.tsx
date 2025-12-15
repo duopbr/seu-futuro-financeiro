@@ -38,6 +38,7 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
     switch (key) {
       case 'patrimonio': return 'Patrimônio Nominal';
       case 'patrimonioReal': return 'Patrimônio Real';
+      case 'patrimonioSemAportes': return 'Sem Aportes';
       case 'investido': return 'Total Investido';
       default: return key;
     }
@@ -104,6 +105,15 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
               activeDot={{ r: 5, fill: 'hsl(var(--chart-2))' }}
             />
           )}
+          <Line 
+            type="monotone" 
+            dataKey="patrimonioSemAportes" 
+            stroke="hsl(var(--chart-4))" 
+            strokeWidth={2}
+            strokeDasharray="4 4"
+            dot={false}
+            activeDot={{ r: 5, fill: 'hsl(var(--chart-4))' }}
+          />
           <Line 
             type="monotone" 
             dataKey="investido" 
