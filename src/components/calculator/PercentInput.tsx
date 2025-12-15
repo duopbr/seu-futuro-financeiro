@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -26,30 +26,27 @@ export function PercentInput({
   id,
   hint
 }: PercentInputProps) {
-  const [displayValue, setDisplayValue] = useState(
+  // Initialize display value from prop
+  const [displayValue, setDisplayValue] = useState(() => 
     value ? value.toString().replace('.', ',') : ''
   );
-
-  useEffect(() => {
-    const currentNumeric = parseFloat(displayValue.replace(',', '.')) || 0;
-    if (Math.abs(currentNumeric - value) > 0.001) {
-      setDisplayValue(value ? value.toString().replace('.', ',') : '');
-    }
-  }, [value]);
+  
+  // Track if input is focused to avoid external updates during editing
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let inputValue = e.target.value.replace(/[^\d.,]/g, '');
     
-    // Normalizar: substituir ponto por vírgula
+    // Normalize: replace dot with comma
     inputValue = inputValue.replace('.', ',');
     
-    // Limitar a uma única vírgula
+    // Limit to single comma
     const parts = inputValue.split(',');
     if (parts.length > 2) {
       inputValue = parts[0] + ',' + parts.slice(1).join('');
     }
     
-    // Limitar a 2 casas decimais
+    // Limit to 2 decimal places
     const [intPart, decPart] = inputValue.split(',');
     const finalDisplay = decPart !== undefined 
       ? `${intPart},${decPart.slice(0, 2)}` 
@@ -57,13 +54,28 @@ export function PercentInput({
     
     setDisplayValue(finalDisplay);
     
-    // Converter para número e validar
+    // Convert to number and validate
     const numericValue = parseFloat(finalDisplay.replace(',', '.')) || 0;
     
     if (numericValue >= min && numericValue <= max) {
       onChange(numericValue);
     }
   };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    // Sync display value with actual value on blur
+    setDisplayValue(value ? value.toString().replace('.', ',') : '');
+  };
+
+  // Only update display from prop when not focused
+  const displayValueToShow = isFocused 
+    ? displayValue 
+    : (value ? value.toString().replace('.', ',') : '');
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -73,8 +85,10 @@ export function PercentInput({
           id={id}
           type="text"
           inputMode="decimal"
-          value={displayValue}
+          value={displayValueToShow}
           onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className="pr-12"
         />
