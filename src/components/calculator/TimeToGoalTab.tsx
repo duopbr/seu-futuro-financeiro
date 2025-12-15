@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
+import { LeadCaptureDialog } from './LeadCaptureDialog';
 import { calculateTimeToGoal, TimeToGoalResult, formatCurrency } from '@/lib/calculations';
-import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown } from 'lucide-react';
+import { Clock, Target, Calendar, AlertCircle, Wallet, Sparkles, TrendingDown, Calculator } from 'lucide-react';
 
 export function TimeToGoalTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -19,10 +21,16 @@ export function TimeToGoalTab() {
   const [considerarInflacao, setConsiderarInflacao] = useState(false);
   
   const [result, setResult] = useState<TimeToGoalResult | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [showLeadDialog, setShowLeadDialog] = useState(false);
 
   const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
-  useEffect(() => {
+  const handleCalculate = () => {
+    setShowLeadDialog(true);
+  };
+
+  const handleLeadSubmit = () => {
     const calculation = calculateTimeToGoal(
       patrimonioInicial,
       aporteMensal,
@@ -31,7 +39,8 @@ export function TimeToGoalTab() {
       inflacaoEfetiva
     );
     setResult(calculation);
-  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoEfetiva, patrimonioObjetivo]);
+    setShowResults(true);
+  };
 
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('pt-BR', {
@@ -118,11 +127,16 @@ export function TimeToGoalTab() {
               />
             </div>
           )}
+
+          <Button onClick={handleCalculate} className="w-full sm:w-auto" size="lg">
+            <Calculator className="h-4 w-4 mr-2" />
+            Calcular
+          </Button>
         </CardContent>
       </Card>
 
       {/* Error Alert */}
-      {result && !result.isPossible && (
+      {showResults && result && !result.isPossible && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Objetivo não atingível</AlertTitle>
@@ -133,7 +147,7 @@ export function TimeToGoalTab() {
       )}
 
       {/* Results */}
-      {result && result.isPossible && (
+      {showResults && result && result.isPossible && (
         <>
           {/* Time Result - Highlighted */}
           <Card className="border-primary/30 bg-primary/5">
@@ -205,6 +219,12 @@ export function TimeToGoalTab() {
           </Card>
         </>
       )}
+
+      <LeadCaptureDialog
+        open={showLeadDialog}
+        onOpenChange={setShowLeadDialog}
+        onSubmit={handleLeadSubmit}
+      />
     </div>
   );
 }

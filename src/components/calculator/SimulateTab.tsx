@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
+import { LeadCaptureDialog } from './LeadCaptureDialog';
 import { simulatePatrimony, SimulationResult, formatCurrency } from '@/lib/calculations';
-import { Wallet, TrendingUp, Sparkles, TrendingDown, Gift } from 'lucide-react';
+import { Wallet, TrendingUp, Sparkles, TrendingDown, Gift, Calculator } from 'lucide-react';
 
 export function SimulateTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -19,10 +21,16 @@ export function SimulateTab() {
   const [considerarInflacao, setConsiderarInflacao] = useState(false);
   
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [showLeadDialog, setShowLeadDialog] = useState(false);
 
   const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
-  useEffect(() => {
+  const handleCalculate = () => {
+    setShowLeadDialog(true);
+  };
+
+  const handleLeadSubmit = () => {
     const prazoMeses = prazoAnos * 12;
     const simulation = simulatePatrimony(
       patrimonioInicial,
@@ -32,7 +40,8 @@ export function SimulateTab() {
       inflacaoEfetiva
     );
     setResult(simulation);
-  }, [patrimonioInicial, aporteMensal, taxaAnual, inflacaoEfetiva, prazoAnos]);
+    setShowResults(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -107,11 +116,16 @@ export function SimulateTab() {
               />
             </div>
           )}
+
+          <Button onClick={handleCalculate} className="w-full sm:w-auto" size="lg">
+            <Calculator className="h-4 w-4 mr-2" />
+            Calcular
+          </Button>
         </CardContent>
       </Card>
 
       {/* Results */}
-      {result && (
+      {showResults && result && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <ResultCard
@@ -165,6 +179,12 @@ export function SimulateTab() {
           </Card>
         </>
       )}
+
+      <LeadCaptureDialog
+        open={showLeadDialog}
+        onOpenChange={setShowLeadDialog}
+        onSubmit={handleLeadSubmit}
+      />
     </div>
   );
 }
