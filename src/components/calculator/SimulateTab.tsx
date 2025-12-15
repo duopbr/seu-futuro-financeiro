@@ -6,7 +6,7 @@ import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { simulatePatrimony, SimulationResult, formatCurrency } from '@/lib/calculations';
-import { Wallet, TrendingUp, Sparkles, TrendingDown } from 'lucide-react';
+import { Wallet, TrendingUp, Sparkles, TrendingDown, Gift } from 'lucide-react';
 
 export function SimulateTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -86,7 +86,7 @@ export function SimulateTab() {
       {/* Results */}
       {result && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <ResultCard
               label="Patrimônio Final"
               value={result.patrimonioFinal}
@@ -101,6 +101,15 @@ export function SimulateTab() {
               subtitle="Corrigido pela inflação"
             />
             <ResultCard
+              label="Benefício dos Aportes"
+              value={result.beneficioAportes}
+              icon={<Gift className="h-5 w-5" />}
+              variant="success"
+              subtitle={`Sem aportes: ${formatCurrency(result.patrimonioFinalSemAportes)}`}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+            <ResultCard
               label="Total Investido"
               value={result.totalInvestido}
               icon={<TrendingUp className="h-5 w-5" />}
@@ -109,7 +118,6 @@ export function SimulateTab() {
               label="Ganho com Juros"
               value={result.jurosTotal}
               icon={<Sparkles className="h-5 w-5" />}
-              variant="success"
               subtitle={`Real: ${formatCurrency(result.jurosTotalReal)}`}
             />
           </div>

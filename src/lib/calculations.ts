@@ -5,6 +5,7 @@ export interface SimulationDataPoint {
   month: number;
   patrimonio: number;
   patrimonioReal: number;
+  patrimonioSemAportes: number;
   investido: number;
   juros: number;
 }
@@ -12,6 +13,8 @@ export interface SimulationDataPoint {
 export interface SimulationResult {
   patrimonioFinal: number;
   patrimonioFinalReal: number;
+  patrimonioFinalSemAportes: number;
+  beneficioAportes: number;
   totalInvestido: number;
   jurosTotal: number;
   jurosTotalReal: number;
@@ -64,12 +67,14 @@ export function simulatePatrimony(
   const data: SimulationDataPoint[] = [];
   
   let saldo = patrimonioInicial;
+  let saldoSemAportes = patrimonioInicial;
   
   // Ponto inicial (mês 0)
   data.push({
     month: 0,
     patrimonio: patrimonioInicial,
     patrimonioReal: patrimonioInicial,
+    patrimonioSemAportes: patrimonioInicial,
     investido: patrimonioInicial,
     juros: 0
   });
@@ -77,6 +82,9 @@ export function simulatePatrimony(
   for (let m = 1; m <= prazoMeses; m++) {
     // Rendimento do mês + aporte no fim do mês
     saldo = saldo * (1 + r) + aporteMensal;
+    // Patrimônio sem aportes (só o inicial rendendo)
+    saldoSemAportes = saldoSemAportes * (1 + r);
+    
     const investido = patrimonioInicial + aporteMensal * m;
     const juros = saldo - investido;
     
@@ -88,6 +96,7 @@ export function simulatePatrimony(
       month: m,
       patrimonio: saldo,
       patrimonioReal,
+      patrimonioSemAportes: saldoSemAportes,
       investido,
       juros
     });
@@ -95,6 +104,8 @@ export function simulatePatrimony(
   
   const totalInvestido = patrimonioInicial + aporteMensal * prazoMeses;
   const patrimonioFinal = saldo;
+  const patrimonioFinalSemAportes = saldoSemAportes;
+  const beneficioAportes = patrimonioFinal - patrimonioFinalSemAportes;
   const jurosTotal = patrimonioFinal - totalInvestido;
   
   // Valor real final
@@ -105,6 +116,8 @@ export function simulatePatrimony(
   return {
     patrimonioFinal,
     patrimonioFinalReal,
+    patrimonioFinalSemAportes,
+    beneficioAportes,
     totalInvestido,
     jurosTotal,
     jurosTotalReal,
@@ -134,6 +147,7 @@ export function calculateTimeToGoal(
         month: 0,
         patrimonio: patrimonioInicial,
         patrimonioReal: patrimonioInicial,
+        patrimonioSemAportes: patrimonioInicial,
         investido: patrimonioInicial,
         juros: 0
       }],
@@ -285,6 +299,7 @@ export function calculateRequiredContribution(
         month: 0,
         patrimonio: patrimonioInicial,
         patrimonioReal: patrimonioInicial,
+        patrimonioSemAportes: patrimonioInicial,
         investido: patrimonioInicial,
         juros: 0
       }]
