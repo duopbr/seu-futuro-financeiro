@@ -43,6 +43,7 @@
     /* Chart colors */
     --chart-primary: 195 85% 49%;
     --chart-secondary: 210 15% 70%;
+    --chart-warning: 25 95% 53%; /* Laranja vibrante #F97316 */
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -85,6 +86,7 @@
 
     --chart-primary: 195 85% 55%;
     --chart-secondary: 210 15% 50%;
+    --chart-warning: 25 95% 53%; /* Laranja vibrante #F97316 */
 
     --sidebar-background: 210 25% 10%;
     --sidebar-foreground: 210 20% 95%;
