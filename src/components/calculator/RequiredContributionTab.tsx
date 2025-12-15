@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { CurrencyInput } from './CurrencyInput';
 import { PercentInput } from './PercentInput';
 import { YearsInput } from './YearsInput';
 import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
+import { LeadCaptureDialog } from './LeadCaptureDialog';
 import { calculateRequiredContribution, RequiredContributionResult, formatCurrency } from '@/lib/calculations';
-import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle, TrendingDown } from 'lucide-react';
+import { PiggyBank, Wallet, Sparkles, AlertCircle, CheckCircle, TrendingDown, Calculator } from 'lucide-react';
 
 export function RequiredContributionTab() {
   const [patrimonioInicial, setPatrimonioInicial] = useState(10000);
@@ -20,10 +22,16 @@ export function RequiredContributionTab() {
   const [considerarInflacao, setConsiderarInflacao] = useState(false);
   
   const [result, setResult] = useState<RequiredContributionResult | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [showLeadDialog, setShowLeadDialog] = useState(false);
 
   const inflacaoEfetiva = considerarInflacao ? inflacaoAnual : 0;
 
-  useEffect(() => {
+  const handleCalculate = () => {
+    setShowLeadDialog(true);
+  };
+
+  const handleLeadSubmit = () => {
     const prazoMeses = prazoAnos * 12;
     const calculation = calculateRequiredContribution(
       patrimonioInicial,
@@ -33,7 +41,8 @@ export function RequiredContributionTab() {
       inflacaoEfetiva
     );
     setResult(calculation);
-  }, [patrimonioInicial, taxaAnual, inflacaoEfetiva, patrimonioObjetivo, prazoAnos]);
+    setShowResults(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -107,11 +116,16 @@ export function RequiredContributionTab() {
               />
             </div>
           )}
+
+          <Button onClick={handleCalculate} className="w-full sm:w-auto" size="lg">
+            <Calculator className="h-4 w-4 mr-2" />
+            Calcular
+          </Button>
         </CardContent>
       </Card>
 
       {/* Error Alert */}
-      {result && !result.isPossible && (
+      {showResults && result && !result.isPossible && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Não foi possível calcular</AlertTitle>
@@ -122,7 +136,7 @@ export function RequiredContributionTab() {
       )}
 
       {/* Success Alert - when no contribution needed */}
-      {result && result.isPossible && result.aporteNecessario === 0 && result.errorMessage && (
+      {showResults && result && result.isPossible && result.aporteNecessario === 0 && result.errorMessage && (
         <Alert className="border-green-500/30 bg-green-500/5">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertTitle className="text-green-600">Ótima notícia!</AlertTitle>
@@ -133,7 +147,7 @@ export function RequiredContributionTab() {
       )}
 
       {/* Results */}
-      {result && result.isPossible && (
+      {showResults && result && result.isPossible && (
         <>
           {/* Required Contribution - Highlighted */}
           <Card className="border-primary/30 bg-primary/5">
@@ -195,6 +209,12 @@ export function RequiredContributionTab() {
           )}
         </>
       )}
+
+      <LeadCaptureDialog
+        open={showLeadDialog}
+        onOpenChange={setShowLeadDialog}
+        onSubmit={handleLeadSubmit}
+      />
     </div>
   );
 }
