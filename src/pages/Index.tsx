@@ -3,6 +3,7 @@ import { SimulateTab } from '@/components/calculator/SimulateTab';
 import { TimeToGoalTab } from '@/components/calculator/TimeToGoalTab';
 import { RequiredContributionTab } from '@/components/calculator/RequiredContributionTab';
 import { TrendingUp, Clock, PiggyBank, Info } from 'lucide-react';
+import logo from '@/assets/logo.webp';
 
 const Index = () => {
   return (
@@ -11,9 +12,7 @@ const Index = () => {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <TrendingUp className="h-6 w-6 text-primary" />
-            </div>
+            <img src={logo} alt="Duop" className="h-10" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">
                 Calculadora de Patrimônio
