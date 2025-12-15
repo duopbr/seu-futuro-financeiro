@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { SimulationDataPoint, formatCurrency, formatCompactCurrency } from '@/lib/calculations';
+import { SimulationDataPoint } from '@/lib/finance';
+import { formatCurrency, formatCompactCurrency } from '@/lib/format';
 
 interface PatrimonyChartProps {
   data: SimulationDataPoint[];
@@ -15,24 +17,44 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
     );
   }
 
-  // Determinar se deve mostrar em anos ou meses
+  // Determine if should show in years or months
   const maxMonth = data[data.length - 1]?.month || 0;
   const showYears = maxMonth > 24;
+  
+  // Group by year if more than 600 months (50 years) for performance
+  const shouldGroupByYear = maxMonth > 600;
 
-  // Preparar dados para o gráfico
-  const chartData = data.map(point => ({
-    ...point,
-    label: showYears 
-      ? `${(point.month / 12).toFixed(1)} anos`
-      : `${point.month} meses`,
-    xValue: showYears ? point.month / 12 : point.month
-  }));
-
-  // Filtrar pontos para melhor visualização (max ~50 pontos)
-  const step = Math.max(1, Math.floor(chartData.length / 50));
-  const filteredData = chartData.filter((_, index) => 
-    index === 0 || index === chartData.length - 1 || index % step === 0
-  );
+  // Prepare and filter chart data
+  const chartData = useMemo(() => {
+    if (shouldGroupByYear) {
+      // Group by year: take one point per year
+      const yearlyData = data.filter((point, index) => {
+        if (index === 0) return true; // Always include first
+        if (index === data.length - 1) return true; // Always include last
+        return point.month % 12 === 0; // Include yearly points
+      });
+      
+      return yearlyData.map(point => ({
+        ...point,
+        label: `${(point.month / 12).toFixed(0)} anos`,
+        xValue: point.month / 12
+      }));
+    }
+    
+    // For shorter periods, filter to ~50 points max
+    const step = Math.max(1, Math.floor(data.length / 50));
+    const filteredData = data.filter((_, index) => 
+      index === 0 || index === data.length - 1 || index % step === 0
+    );
+    
+    return filteredData.map(point => ({
+      ...point,
+      label: showYears 
+        ? `${(point.month / 12).toFixed(1)} anos`
+        : `${point.month} meses`,
+      xValue: showYears ? point.month / 12 : point.month
+    }));
+  }, [data, showYears, shouldGroupByYear]);
 
   const getLineName = (key: string) => {
     switch (key) {
@@ -44,17 +66,30 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
     }
   };
 
+  const formatTooltipLabel = (_: unknown, payload: { payload: { month: number } }[]) => {
+    if (payload && payload[0]) {
+      const month = payload[0].payload.month;
+      const years = Math.floor(month / 12);
+      const months = month % 12;
+      if (years > 0) {
+        return months > 0 ? `${years} anos e ${months} meses` : `${years} anos`;
+      }
+      return `${month} meses`;
+    }
+    return '';
+  };
+
   return (
     <div className="w-full h-[300px] sm:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
-          data={filteredData}
+          data={chartData}
           margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis 
             dataKey="xValue"
-            tickFormatter={(value) => showYears ? `${value.toFixed(0)}a` : `${value}m`}
+            tickFormatter={(value) => showYears || shouldGroupByYear ? `${value.toFixed(0)}a` : `${value}m`}
             className="text-xs fill-muted-foreground"
           />
           <YAxis 
@@ -67,18 +102,7 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
               formatCurrency(value),
               getLineName(name)
             ]}
-            labelFormatter={(_, payload) => {
-              if (payload && payload[0]) {
-                const month = payload[0].payload.month;
-                const years = Math.floor(month / 12);
-                const months = month % 12;
-                if (years > 0) {
-                  return months > 0 ? `${years} anos e ${months} meses` : `${years} anos`;
-                }
-                return `${month} meses`;
-              }
-              return '';
-            }}
+            labelFormatter={formatTooltipLabel}
             contentStyle={{
               backgroundColor: 'hsl(var(--card))',
               border: '1px solid hsl(var(--border))',
@@ -108,10 +132,10 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
           <Line 
             type="monotone" 
             dataKey="patrimonioSemAportes" 
-            stroke="hsl(var(--chart-warning))" 
-            strokeWidth={2.5}
+            stroke="hsl(var(--chart-3))" 
+            strokeWidth={2}
             dot={false}
-            activeDot={{ r: 6, fill: 'hsl(var(--chart-warning))' }}
+            activeDot={{ r: 5, fill: 'hsl(var(--chart-3))' }}
           />
           <Line 
             type="monotone" 
@@ -124,6 +148,11 @@ export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) 
           />
         </LineChart>
       </ResponsiveContainer>
+      {shouldGroupByYear && (
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          Gráfico agrupado por ano para melhor visualização
+        </p>
+      )}
     </div>
   );
 }

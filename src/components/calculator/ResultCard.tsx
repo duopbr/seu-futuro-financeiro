@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/calculations';
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface ResultCardProps {
