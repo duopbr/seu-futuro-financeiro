@@ -4,14 +4,17 @@
 export interface SimulationDataPoint {
   month: number;
   patrimonio: number;
+  patrimonioReal: number;
   investido: number;
   juros: number;
 }
 
 export interface SimulationResult {
   patrimonioFinal: number;
+  patrimonioFinalReal: number;
   totalInvestido: number;
   jurosTotal: number;
+  jurosTotalReal: number;
   data: SimulationDataPoint[];
 }
 
@@ -24,14 +27,18 @@ export interface TimeToGoalResult {
   errorMessage?: string;
   data: SimulationDataPoint[];
   patrimonioFinal: number;
+  patrimonioFinalReal: number;
   totalInvestido: number;
   jurosTotal: number;
+  jurosTotalReal: number;
 }
 
 export interface RequiredContributionResult {
   aporteNecessario: number;
   totalInvestido: number;
   jurosTotal: number;
+  jurosTotalReal: number;
+  patrimonioFinalReal: number;
   isPossible: boolean;
   errorMessage?: string;
   data: SimulationDataPoint[];
@@ -44,14 +51,16 @@ export function annualToMonthlyRate(annualRatePercent: number): number {
   return Math.pow(1 + annualRateDecimal, 1 / 12) - 1;
 }
 
-// Simula patrimônio mês a mês
+// Simula patrimônio mês a mês com correção pela inflação
 export function simulatePatrimony(
   patrimonioInicial: number,
   aporteMensal: number,
   taxaAnualPercent: number,
-  prazoMeses: number
+  prazoMeses: number,
+  inflacaoAnualPercent: number = 0
 ): SimulationResult {
   const r = annualToMonthlyRate(taxaAnualPercent);
+  const inflacaoMensal = annualToMonthlyRate(inflacaoAnualPercent);
   const data: SimulationDataPoint[] = [];
   
   let saldo = patrimonioInicial;
@@ -60,6 +69,7 @@ export function simulatePatrimony(
   data.push({
     month: 0,
     patrimonio: patrimonioInicial,
+    patrimonioReal: patrimonioInicial,
     investido: patrimonioInicial,
     juros: 0
   });
@@ -70,9 +80,14 @@ export function simulatePatrimony(
     const investido = patrimonioInicial + aporteMensal * m;
     const juros = saldo - investido;
     
+    // Valor real (corrigido pela inflação)
+    const fatorInflacao = Math.pow(1 + inflacaoMensal, m);
+    const patrimonioReal = saldo / fatorInflacao;
+    
     data.push({
       month: m,
       patrimonio: saldo,
+      patrimonioReal,
       investido,
       juros
     });
@@ -82,10 +97,17 @@ export function simulatePatrimony(
   const patrimonioFinal = saldo;
   const jurosTotal = patrimonioFinal - totalInvestido;
   
+  // Valor real final
+  const fatorInflacaoFinal = Math.pow(1 + inflacaoMensal, prazoMeses);
+  const patrimonioFinalReal = patrimonioFinal / fatorInflacaoFinal;
+  const jurosTotalReal = patrimonioFinalReal - totalInvestido;
+  
   return {
     patrimonioFinal,
+    patrimonioFinalReal,
     totalInvestido,
     jurosTotal,
+    jurosTotalReal,
     data
   };
 }
@@ -95,7 +117,8 @@ export function calculateTimeToGoal(
   patrimonioInicial: number,
   aporteMensal: number,
   taxaAnualPercent: number,
-  patrimonioObjetivo: number
+  patrimonioObjetivo: number,
+  inflacaoAnualPercent: number = 0
 ): TimeToGoalResult {
   const r = annualToMonthlyRate(taxaAnualPercent);
   
@@ -110,12 +133,15 @@ export function calculateTimeToGoal(
       data: [{
         month: 0,
         patrimonio: patrimonioInicial,
+        patrimonioReal: patrimonioInicial,
         investido: patrimonioInicial,
         juros: 0
       }],
       patrimonioFinal: patrimonioInicial,
+      patrimonioFinalReal: patrimonioInicial,
       totalInvestido: patrimonioInicial,
-      jurosTotal: 0
+      jurosTotal: 0,
+      jurosTotalReal: 0
     };
   }
   
@@ -130,8 +156,10 @@ export function calculateTimeToGoal(
       errorMessage: 'Com esses parâmetros, não é possível atingir o objetivo. Adicione aportes mensais ou uma rentabilidade positiva.',
       data: [],
       patrimonioFinal: 0,
+      patrimonioFinalReal: 0,
       totalInvestido: 0,
-      jurosTotal: 0
+      jurosTotal: 0,
+      jurosTotalReal: 0
     };
   }
   
@@ -162,8 +190,10 @@ export function calculateTimeToGoal(
       errorMessage: 'Com esses parâmetros, não é possível atingir o objetivo.',
       data: [],
       patrimonioFinal: 0,
+      patrimonioFinalReal: 0,
       totalInvestido: 0,
-      jurosTotal: 0
+      jurosTotal: 0,
+      jurosTotalReal: 0
     };
   }
   
@@ -181,13 +211,15 @@ export function calculateTimeToGoal(
       errorMessage: 'O prazo estimado excede 100 anos. Considere aumentar aportes ou a rentabilidade.',
       data: [],
       patrimonioFinal: 0,
+      patrimonioFinalReal: 0,
       totalInvestido: 0,
-      jurosTotal: 0
+      jurosTotal: 0,
+      jurosTotalReal: 0
     };
   }
   
   // Simular para obter dados do gráfico
-  const simulation = simulatePatrimony(patrimonioInicial, aporteMensal, taxaAnualPercent, meses);
+  const simulation = simulatePatrimony(patrimonioInicial, aporteMensal, taxaAnualPercent, meses, inflacaoAnualPercent);
   
   const years = Math.floor(meses / 12);
   const remainingMonths = meses % 12;
@@ -203,8 +235,10 @@ export function calculateTimeToGoal(
     isPossible: true,
     data: simulation.data,
     patrimonioFinal: simulation.patrimonioFinal,
+    patrimonioFinalReal: simulation.patrimonioFinalReal,
     totalInvestido: simulation.totalInvestido,
-    jurosTotal: simulation.jurosTotal
+    jurosTotal: simulation.jurosTotal,
+    jurosTotalReal: simulation.jurosTotalReal
   };
 }
 
@@ -232,7 +266,8 @@ export function calculateRequiredContribution(
   patrimonioInicial: number,
   taxaAnualPercent: number,
   patrimonioObjetivo: number,
-  prazoMeses: number
+  prazoMeses: number,
+  inflacaoAnualPercent: number = 0
 ): RequiredContributionResult {
   const r = annualToMonthlyRate(taxaAnualPercent);
   const n = prazoMeses;
@@ -243,10 +278,13 @@ export function calculateRequiredContribution(
       aporteNecessario: 0,
       totalInvestido: patrimonioInicial,
       jurosTotal: 0,
+      jurosTotalReal: 0,
+      patrimonioFinalReal: patrimonioInicial,
       isPossible: true,
       data: [{
         month: 0,
         patrimonio: patrimonioInicial,
+        patrimonioReal: patrimonioInicial,
         investido: patrimonioInicial,
         juros: 0
       }]
@@ -268,13 +306,16 @@ export function calculateRequiredContribution(
   if (pmt < 0 || !isFinite(pmt) || isNaN(pmt)) {
     // Caso especial: PV já cresce mais do que o necessário
     if (pmt < 0) {
+      const simulation = simulatePatrimony(patrimonioInicial, 0, taxaAnualPercent, n, inflacaoAnualPercent);
       return {
         aporteNecessario: 0,
         totalInvestido: patrimonioInicial,
         jurosTotal: 0,
+        jurosTotalReal: simulation.jurosTotalReal,
+        patrimonioFinalReal: simulation.patrimonioFinalReal,
         isPossible: true,
         errorMessage: 'Seu patrimônio inicial já atingirá o objetivo apenas com os rendimentos!',
-        data: simulatePatrimony(patrimonioInicial, 0, taxaAnualPercent, n).data
+        data: simulation.data
       };
     }
     
@@ -282,6 +323,8 @@ export function calculateRequiredContribution(
       aporteNecessario: 0,
       totalInvestido: 0,
       jurosTotal: 0,
+      jurosTotalReal: 0,
+      patrimonioFinalReal: 0,
       isPossible: false,
       errorMessage: 'Não foi possível calcular o aporte necessário com esses parâmetros.',
       data: []
@@ -289,12 +332,14 @@ export function calculateRequiredContribution(
   }
   
   // Simular para obter dados do gráfico
-  const simulation = simulatePatrimony(patrimonioInicial, pmt, taxaAnualPercent, n);
+  const simulation = simulatePatrimony(patrimonioInicial, pmt, taxaAnualPercent, n, inflacaoAnualPercent);
   
   return {
     aporteNecessario: pmt,
     totalInvestido: simulation.totalInvestido,
     jurosTotal: simulation.jurosTotal,
+    jurosTotalReal: simulation.jurosTotalReal,
+    patrimonioFinalReal: simulation.patrimonioFinalReal,
     isPossible: true,
     data: simulation.data
   };

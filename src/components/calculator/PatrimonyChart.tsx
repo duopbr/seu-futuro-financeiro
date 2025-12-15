@@ -3,9 +3,10 @@ import { SimulationDataPoint, formatCurrency, formatCompactCurrency } from '@/li
 
 interface PatrimonyChartProps {
   data: SimulationDataPoint[];
+  showReal?: boolean;
 }
 
-export function PatrimonyChart({ data }: PatrimonyChartProps) {
+export function PatrimonyChart({ data, showReal = false }: PatrimonyChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[300px] bg-muted/30 rounded-lg">
@@ -33,6 +34,15 @@ export function PatrimonyChart({ data }: PatrimonyChartProps) {
     index === 0 || index === chartData.length - 1 || index % step === 0
   );
 
+  const getLineName = (key: string) => {
+    switch (key) {
+      case 'patrimonio': return 'Patrimônio Nominal';
+      case 'patrimonioReal': return 'Patrimônio Real';
+      case 'investido': return 'Total Investido';
+      default: return key;
+    }
+  };
+
   return (
     <div className="w-full h-[300px] sm:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -54,7 +64,7 @@ export function PatrimonyChart({ data }: PatrimonyChartProps) {
           <Tooltip 
             formatter={(value: number, name: string) => [
               formatCurrency(value),
-              name === 'patrimonio' ? 'Patrimônio' : 'Total Investido'
+              getLineName(name)
             ]}
             labelFormatter={(_, payload) => {
               if (payload && payload[0]) {
@@ -75,9 +85,7 @@ export function PatrimonyChart({ data }: PatrimonyChartProps) {
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
           />
-          <Legend 
-            formatter={(value) => value === 'patrimonio' ? 'Patrimônio Total' : 'Total Investido'}
-          />
+          <Legend formatter={getLineName} />
           <Line 
             type="monotone" 
             dataKey="patrimonio" 
@@ -86,6 +94,16 @@ export function PatrimonyChart({ data }: PatrimonyChartProps) {
             dot={false}
             activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
           />
+          {showReal && (
+            <Line 
+              type="monotone" 
+              dataKey="patrimonioReal" 
+              stroke="hsl(var(--chart-2))" 
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 5, fill: 'hsl(var(--chart-2))' }}
+            />
+          )}
           <Line 
             type="monotone" 
             dataKey="investido" 
