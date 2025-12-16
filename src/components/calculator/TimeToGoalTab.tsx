@@ -7,6 +7,7 @@ import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { InflationToggle } from './InflationToggle';
 import { LeadCaptureDialog } from './LeadCaptureDialog';
+import { HowToUseSection, TipBox, FieldList } from './HowToUseSection';
 import { useCalculator } from '@/hooks/useCalculator';
 import { TimeToGoalResult } from '@/lib/finance';
 import { formatCurrency, formatTimespan, formatDate } from '@/lib/format';
@@ -39,6 +40,25 @@ export function TimeToGoalTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <HowToUseSection>
+            <p>
+              <strong className="text-foreground">O que esta calculadora faz?</strong><br />
+              Calcula em quanto tempo você atingirá uma meta financeira específica com seus investimentos atuais.
+            </p>
+            <div>
+              <p className="mb-2"><strong className="text-foreground">Preencha os campos:</strong></p>
+              <FieldList fields={[
+                { name: 'Patrimônio Inicial', description: 'Quanto você já tem investido hoje' },
+                { name: 'Aporte Mensal', description: 'Valor que vai depositar todo mês' },
+                { name: 'Rentabilidade Anual', description: 'Retorno esperado dos seus investimentos' },
+                { name: 'Patrimônio Objetivo', description: 'O valor que você deseja atingir (ex: R$ 1.000.000)' },
+              ]} />
+            </div>
+            <TipBox>
+              Se aparecer "Objetivo não atingível", tente aumentar o aporte mensal ou a rentabilidade esperada. 
+              Sem aportes e com rentabilidade zero, é impossível crescer o patrimônio.
+            </TipBox>
+          </HowToUseSection>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <CurrencyInput
               id="patrimonio-inicial-goal"

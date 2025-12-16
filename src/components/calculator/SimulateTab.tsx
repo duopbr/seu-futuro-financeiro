@@ -7,6 +7,7 @@ import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { InflationToggle } from './InflationToggle';
 import { LeadCaptureDialog } from './LeadCaptureDialog';
+import { HowToUseSection, TipBox, FieldList } from './HowToUseSection';
 import { useCalculator } from '@/hooks/useCalculator';
 import { SimulationResult } from '@/lib/finance';
 import { formatCurrency } from '@/lib/format';
@@ -39,6 +40,25 @@ export function SimulateTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <HowToUseSection>
+            <p>
+              <strong className="text-foreground">O que esta calculadora faz?</strong><br />
+              Projeta como seu patrimônio crescerá ao longo do tempo com base em aportes regulares e juros compostos.
+            </p>
+            <div>
+              <p className="mb-2"><strong className="text-foreground">Preencha os campos:</strong></p>
+              <FieldList fields={[
+                { name: 'Patrimônio Inicial', description: 'Quanto você já tem investido hoje' },
+                { name: 'Aporte Mensal', description: 'Valor que pretende depositar todo mês' },
+                { name: 'Rentabilidade Anual', description: 'Retorno esperado (ex: 10% = CDI, 12% = fundos)' },
+                { name: 'Prazo', description: 'Por quantos anos pretende manter os investimentos' },
+              ]} />
+            </div>
+            <TipBox>
+              Ative "Considerar Inflação" para ver o poder de compra real do seu dinheiro no futuro. 
+              A inflação média brasileira dos últimos anos é de aproximadamente 4,5% ao ano.
+            </TipBox>
+          </HowToUseSection>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <CurrencyInput
               id="patrimonio-inicial"
