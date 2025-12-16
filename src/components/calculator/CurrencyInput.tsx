@@ -11,6 +11,7 @@ interface CurrencyInputProps {
   max?: number;
   className?: string;
   id: string;
+  hint?: string;
 }
 
 export function CurrencyInput({ 
@@ -21,7 +22,8 @@ export function CurrencyInput({
   min = 0,
   max,
   className,
-  id
+  id,
+  hint
 }: CurrencyInputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/\D/g, '');
@@ -64,6 +66,9 @@ export function CurrencyInput({
           className="pl-10"
         />
       </div>
+      {hint && (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }

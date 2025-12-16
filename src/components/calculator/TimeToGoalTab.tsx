@@ -34,9 +34,10 @@ export function TimeToGoalTab() {
       {/* Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Defina seu Objetivo</CardTitle>
+          <CardTitle className="text-lg">Tempo para atingir objetivo</CardTitle>
           <CardDescription>
-            Descubra em quanto tempo você atingirá seu patrimônio desejado
+            Informe seu valor inicial, aporte mensal, taxa anual e a meta de patrimônio. 
+            Nós calculamos em quanto tempo você pode chegar lá.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -88,6 +89,7 @@ export function TimeToGoalTab() {
               value={inputs.patrimonioObjetivo}
               onChange={(v) => updateInput('patrimonioObjetivo', v)}
               placeholder="500.000,00"
+              hint="Defina sua meta em reais (ex.: R$ 1.000.000)"
             />
           </div>
 

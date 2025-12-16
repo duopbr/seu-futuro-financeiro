@@ -35,9 +35,10 @@ export function RequiredContributionTab() {
       {/* Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Calcule o Aporte Necessário</CardTitle>
+          <CardTitle className="text-lg">Aporte necessário</CardTitle>
           <CardDescription>
-            Descubra quanto precisa investir por mês para atingir seu objetivo no prazo desejado
+            Defina a meta e o prazo. A calculadora estima qual aporte mensal seria necessário 
+            para atingir o valor desejado.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -82,6 +83,7 @@ export function RequiredContributionTab() {
               value={inputs.patrimonioObjetivo}
               onChange={(v) => updateInput('patrimonioObjetivo', v)}
               placeholder="500.000,00"
+              hint="Defina sua meta em reais (ex.: R$ 1.000.000)"
             />
             <YearsInput
               id="prazo-anos-contrib"
@@ -90,6 +92,7 @@ export function RequiredContributionTab() {
               onChange={(v) => updateInput('prazoAnos', v)}
               min={1}
               max={100}
+              hint="Quanto maior o prazo, menor o aporte necessário"
             />
           </div>
 

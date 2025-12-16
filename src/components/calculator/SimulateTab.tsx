@@ -34,9 +34,10 @@ export function SimulateTab() {
       {/* Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Parâmetros da Simulação</CardTitle>
+          <CardTitle className="text-lg">Simular patrimônio</CardTitle>
           <CardDescription>
-            Ajuste os valores para simular o crescimento do seu patrimônio
+            Preencha o valor inicial, seu aporte mensal e a rentabilidade anual para ver a projeção 
+            do seu patrimônio ao longo do tempo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -90,6 +91,7 @@ export function SimulateTab() {
               onChange={(v) => updateInput('prazoAnos', v)}
               min={1}
               max={100}
+              hint="Quanto maior o prazo, maior o efeito dos juros compostos"
             />
           </div>
 
@@ -168,6 +170,9 @@ export function SimulateTab() {
             </CardHeader>
             <CardContent>
               <PatrimonyChart data={simulationResult.data} showReal={inputs.considerarInflacao} />
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                O gráfico compara o patrimônio total com o total investido. A diferença representa o ganho estimado com juros compostos.
+              </p>
             </CardContent>
           </Card>
         </>
