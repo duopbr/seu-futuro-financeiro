@@ -8,6 +8,7 @@ import { ResultCard } from './ResultCard';
 import { PatrimonyChart } from './PatrimonyChart';
 import { InflationToggle } from './InflationToggle';
 import { LeadCaptureDialog } from './LeadCaptureDialog';
+import { HowToUseSection, TipBox, FieldList } from './HowToUseSection';
 import { useCalculator } from '@/hooks/useCalculator';
 import { RequiredContributionResult } from '@/lib/finance';
 import { formatCurrency } from '@/lib/format';
@@ -40,6 +41,25 @@ export function RequiredContributionTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <HowToUseSection>
+            <p>
+              <strong className="text-foreground">O que esta calculadora faz?</strong><br />
+              Descobre quanto você precisa investir por mês para atingir um objetivo financeiro no prazo desejado.
+            </p>
+            <div>
+              <p className="mb-2"><strong className="text-foreground">Preencha os campos:</strong></p>
+              <FieldList fields={[
+                { name: 'Patrimônio Inicial', description: 'Quanto você já tem investido hoje' },
+                { name: 'Rentabilidade Anual', description: 'Retorno esperado dos seus investimentos' },
+                { name: 'Patrimônio Objetivo', description: 'O valor que você deseja atingir' },
+                { name: 'Prazo', description: 'Em quantos anos você quer atingir o objetivo' },
+              ]} />
+            </div>
+            <TipBox>
+              Se o aporte calculado for muito alto para seu orçamento, considere aumentar o prazo 
+              ou revisar o objetivo. Pequenos aumentos no prazo podem reduzir significativamente o aporte necessário.
+            </TipBox>
+          </HowToUseSection>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <CurrencyInput
               id="patrimonio-inicial-contrib"
