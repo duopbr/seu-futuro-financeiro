@@ -29,48 +29,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        {/* How It Works Section */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-3">
-            Como funciona esta calculadora de patrimônio
-          </h2>
-          <p className="text-muted-foreground mb-4">
-            Esta calculadora estima a evolução do seu patrimônio ao longo do tempo considerando três fatores: 
-            valor inicial, aportes mensais e rentabilidade anual. Ela cria uma linha do tempo mês a mês para 
-            mostrar o patrimônio total e o total investido, facilitando entender quanto veio de aportes e 
-            quanto veio de juros compostos.
-          </p>
-          
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            O que você consegue calcular aqui
-          </h3>
-          <ul className="list-disc list-inside text-muted-foreground space-y-1 mb-4">
-            <li><strong>Patrimônio futuro:</strong> quanto você pode ter após X anos investindo um valor fixo por mês.</li>
-            <li><strong>Tempo para atingir uma meta:</strong> em quantos meses/anos você alcança um patrimônio objetivo.</li>
-            <li><strong>Aporte necessário:</strong> quanto investir por mês para chegar em um valor desejado dentro de um prazo.</li>
-          </ul>
-        </section>
-
-        {/* Premissas */}
-        <div className="mb-6 p-4 rounded-lg bg-muted/50 border">
-          <div className="flex items-start gap-2">
-            <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-muted-foreground">
-              <p className="font-medium mb-1">Premissas importantes:</p>
-              <ul className="list-disc list-inside space-y-0.5">
-                <li>A rentabilidade é informada em % ao ano e convertida para taxa mensal.</li>
-                <li>Por padrão, o aporte mensal é considerado no fim de cada mês.</li>
-                <li>Resultados são estimativas e não garantem retorno real (rentabilidade pode variar).</li>
-              </ul>
-              <p className="mt-2 italic">
-                Dica: se você estiver comparando cenários, teste taxas conservadoras e prazos diferentes. 
-                O prazo costuma ser o maior acelerador do patrimônio por causa dos juros compostos.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Calculator Tabs */}
+        {/* Calculator Tabs - Main Focus */}
         <Tabs defaultValue="simulate" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="simulate" className="flex items-center gap-2">
@@ -100,8 +59,31 @@ const Index = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Compound Interest Education Section */}
-        <section className="mt-12 space-y-6">
+        {/* SEO Content - Below Calculator */}
+        <section className="mt-12 space-y-8">
+          {/* How It Works */}
+          <div>
+            <h2 className="text-xl font-semibold text-foreground mb-3">
+              Como funciona esta calculadora de patrimônio
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Esta calculadora estima a evolução do seu patrimônio ao longo do tempo considerando três fatores: 
+              valor inicial, aportes mensais e rentabilidade anual. Ela cria uma linha do tempo mês a mês para 
+              mostrar o patrimônio total e o total investido, facilitando entender quanto veio de aportes e 
+              quanto veio de juros compostos.
+            </p>
+            
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              O que você consegue calcular aqui
+            </h3>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1">
+              <li><strong>Patrimônio futuro:</strong> quanto você pode ter após X anos investindo um valor fixo por mês.</li>
+              <li><strong>Tempo para atingir uma meta:</strong> em quantos meses/anos você alcança um patrimônio objetivo.</li>
+              <li><strong>Aporte necessário:</strong> quanto investir por mês para chegar em um valor desejado dentro de um prazo.</li>
+            </ul>
+          </div>
+
+          {/* Compound Interest Education */}
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-3">
               Juros compostos: por que fazem tanta diferença no patrimônio
@@ -145,6 +127,21 @@ const Index = () => {
               Se você tem um prazo definido (ex.: 5, 10 ou 20 anos), a calculadora encontra o aporte 
               mensal necessário para atingir o patrimônio objetivo. Use a aba "Aporte" para essa simulação.
             </p>
+          </div>
+
+          {/* Premissas */}
+          <div className="p-4 rounded-lg bg-muted/50 border">
+            <div className="flex items-start gap-2">
+              <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-muted-foreground">
+                <p className="font-medium mb-1">Premissas importantes:</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>A rentabilidade é informada em % ao ano e convertida para taxa mensal.</li>
+                  <li>Por padrão, o aporte mensal é considerado no fim de cada mês.</li>
+                  <li>Resultados são estimativas e não garantem retorno real (rentabilidade pode variar).</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 
