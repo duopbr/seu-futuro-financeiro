@@ -44,6 +44,7 @@ export function InflationToggle({
             onChange={onInflationChange}
             placeholder="4,50"
             max={50}
+            hint="Meta do Banco Central: 3% ao ano"
           />
         </div>
       )}

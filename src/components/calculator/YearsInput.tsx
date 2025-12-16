@@ -12,6 +12,7 @@ interface YearsInputProps {
   className?: string;
   id: string;
   showSlider?: boolean;
+  hint?: string;
 }
 
 export function YearsInput({ 
@@ -22,7 +23,8 @@ export function YearsInput({
   max = 50,
   className,
   id,
-  showSlider = true
+  showSlider = true,
+  hint
 }: YearsInputProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numericValue = parseInt(e.target.value, 10) || min;
@@ -77,6 +79,9 @@ export function YearsInput({
           />
         )}
       </div>
+      {hint && (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }
