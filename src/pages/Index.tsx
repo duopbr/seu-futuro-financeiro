@@ -11,10 +11,15 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-6">
+        <div className="flex items-center">
+          {/* Logo - fixed left */}
+          <div className="pl-4 pr-6 py-6 flex-shrink-0">
             <img src={logo} alt="Duop" className="h-10" />
-            <div>
+          </div>
+          
+          {/* Title - aligned with content container */}
+          <div className="flex-1 py-6 pr-4">
+            <div className="max-w-6xl">
               <h1 className="text-2xl font-bold text-foreground">
                 Calculadora de Patrimônio com Juros Compostos
               </h1>
