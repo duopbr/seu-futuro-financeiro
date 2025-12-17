@@ -9,26 +9,23 @@ import logo from '@/assets/logo.webp';
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="flex items-center">
-          {/* Logo - fixed left */}
-          <div className="pl-4 pr-6 py-6 flex-shrink-0">
-            <img src={logo} alt="Duop" className="h-10" />
-          </div>
-          
-          {/* Title - aligned with content container */}
-          <div className="flex-1 py-6 pr-4">
-            <div className="max-w-6xl">
-              <h1 className="text-2xl font-bold text-foreground">
-                Calculadora de Patrimônio com Juros Compostos
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Veja quanto seu dinheiro pode crescer com aportes mensais, valor inicial e uma taxa anual. 
-                Compare patrimônio vs. total investido e descubra o caminho até sua meta.
-              </p>
-            </div>
-          </div>
+      {/* Navbar com Logo */}
+      <nav className="border-b bg-card">
+        <div className="container mx-auto px-4 py-3">
+          <img src={logo} alt="Duop" className="h-8" />
+        </div>
+      </nav>
+
+      {/* Header de Página */}
+      <header className="bg-background py-6">
+        <div className="container mx-auto px-4">
+          <h1 className="text-2xl font-bold text-foreground">
+            Calculadora de Patrimônio com Juros Compostos
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Veja quanto seu dinheiro pode crescer com aportes mensais, valor inicial e uma taxa anual. 
+            Compare patrimônio vs. total investido e descubra o caminho até sua meta.
+          </p>
         </div>
       </header>
 
